@@ -1,0 +1,13 @@
+int - Keyword
+a - Identifier
+, - Delimiter
+b - Identifier
+, - Delimiter
+sum - Identifier
+; - Delimiter
+sum - Identifier
+= - Operator
+a - Identifier
++ - Operator
+b - Identifier
+; - Delimiter

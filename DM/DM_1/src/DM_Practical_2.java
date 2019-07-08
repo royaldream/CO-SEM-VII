@@ -5,28 +5,52 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Scanner;
+import java.util.Set;
+
+import javax.print.attribute.HashAttributeSet;
 
 public class DM_Practical_2 {
 
+	int choice = 0;
 	FileReader fin;
 	FileWriter fout;
 	BufferedReader bin;
 	BufferedWriter bout;
 	String[] cols;
 	ArrayList<String[]> dataList;
-	String initalData[];
+	Double initalData[][];
 	String line = null;
 	int missingCol[];
 
 	public DM_Practical_2() throws IOException {
+		initalData = new Double[26][3];
 		fileRead();
-		fillMissing();
-		// TODO Auto-generated constructor stub
+		Scanner s = new Scanner(System.in);
+		System.out.println("Menu\n1 : Mean\n2 : Meaden\n3 : Mode\n0 : Exit\n");
+		choice = s.nextInt();
+		while (true) {
+			if (choice == 0)
+				break;
+			fillMissing();
+			printIntialData();
+			fillMissingDatawithMean();
+			// printData();
+			fileWrite();
+			choice = s.nextInt();
+		}
 	}
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		new DM_Practical_2();
+	}
+
+	private void printIntialData() {
+		for (Double a[] : initalData)
+			System.out.println("Sum : " + a[0] + "\t NO :" + a[1] + " Mean : " + a[2]);
 	}
 
 	private void printData() {
@@ -35,9 +59,6 @@ public class DM_Practical_2 {
 				System.out.println(cols);
 			}
 		}
-
-		// TODO Auto-generated method stub
-
 	}
 
 	private void fileRead() throws IOException {
@@ -93,39 +114,106 @@ public class DM_Practical_2 {
 	}
 
 	private void calculateMissingData(int i) {
-		if (i == 5)
-			return;
 
-		System.out.println(i);
+		String mode[][] = null;
+		//if (choice == 1 || choice == 2)
+			if (i == 5)
+				return;
+
+		int j = 0;
+		System.out.println("cols : " + i);
 		double sum = 0, n = 0;
 		for (String[] rows : dataList) {
 			if (!rows[i].contains("?"))
 				try {
-					
-					sum = sum + Double.parseDouble(rows[i]);
-					System.out.println(rows[i]);
+					if (choice == 1)
+						sum = sum + Double.parseDouble(rows[i]);
+					// else if(choice == 3)
+					// {
+					// if()
+					// mode[j][0]=rows[i];
+					// mode[j][1]=String.valueOf(0);
+					// }
+					n++;
+					j++;
+					// System.out.println(rows[i]);
 				} catch (Exception e) {
-					//e.printStackTrace();
+					// e.printStackTrace();
 				}
 			/*
-			 * for (int key = 0; key < rows.length; key++) {
-			 * 
-			 * }
-			 */n++;
+			 * for (int key = 0; key < rows.length; key++) { }
+			 */
 		}
-		System.out.println(sum+"\n\t\t");
+		// System.out.println(sum + " : " + n);
+
+		intialData(i, sum, (double) n);
 
 	}
 
-	private void intialData() {
-		initalData = new String[26];
-		initalData[1] = 46 + "";
-		initalData[5] = "three";
-		initalData[18] = 4.6f + "";
-		initalData[19] = 4.6f + "";
-		initalData[21] = 46 + "";
-		initalData[22] = 46000 + "";
-		initalData[25] = 46000 + "";
+	private void intialData(int index, double sum, double cnt) {
+		if (choice == 1) {
+			initalData[index][0] = sum;
+			initalData[index][1] = cnt;
+			initalData[index][2] = sum / cnt;
+		} else if (choice == 2) {
+			int i = dataList.size() / 2;
+			if (dataList.size() % 2 == 0) {
+				String[] cols = dataList.get(i);
+				// System.out.println("size"+dataList.size()+" "+cols[index]+"
+				// "+i+" "+index);
+				Double a = Double.parseDouble(cols[index]);
+				cols = dataList.get(i - 1);
+				Double b = Double.parseDouble(cols[index]);
+				// System.out.println("size"+dataList.size()+" "+cols[index]+"
+				// "+i+" "+index);
+				initalData[index][1] = (double) dataList.size();
+				initalData[index][2] = (a + b) / 2;
+				System.out.println(a + "\t" + b);
+			} else {
+				initalData[index][1] = (double) dataList.size();
+				initalData[index][2] = Double.parseDouble(cols[i - 1]);
+			}
+		} else if (choice == 3) {
+			int i = index;
+			Hashtable<String, Integer> datas = new Hashtable<String, Integer>();
+			// ArrayList<String> datas=new ArrayList<>();
+			// ArrayList<Integer> mcounter=new ArrayList<Integer>();
+			for (String[] rows : dataList) {
+				if (!rows[i].contains("?")) {
+					if (!datas.containsKey(rows[i])) {
+						datas.put(rows[i], 0);
+
+					} else {
+						// System.out.println(datas.get(rows[i]));
+						datas.replace(rows[i], datas.get(rows[i]), datas.get(rows[i]) + 1);
+					}
+				}
+			}
+			int maxValues = 0;
+			for (String data : datas.keySet()) {
+				if (datas.get(data) > maxValues) {
+					System.out.println(maxValues);
+					maxValues = datas.get(data);
+					initalData[index][2] = Double.parseDouble(data);
+				}
+			}
+		}
+	}
+
+	private void fillMissingDatawithMean() {
+		int j = 0;
+		for (String[] rows : dataList) {
+			int i = 0;
+			for (String cols : rows) {
+				// System.out.print(i + "\t" + cols);
+				if (cols.contains("?"))
+					if (initalData[i][2] != null)
+						dataList.get(j)[i] = String.valueOf(initalData[i][2]);
+				i++;
+			}
+			// System.out.println();
+			j++;
+		}
 	}
 
 }
